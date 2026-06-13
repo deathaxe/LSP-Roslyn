@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# development
+.sublime/
+.venv/
+.vscode/
+
+# python cache files
+__pycache__/
+*.py[cod]
