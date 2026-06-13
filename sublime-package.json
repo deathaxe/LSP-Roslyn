@@ -1,0 +1,69 @@
+{
+	"contributions": {
+		"settings": [
+			{
+				"file_patterns": [
+					"/LSP-Roslyn.sublime-settings"
+				],
+				"schema": {
+					"$id": "sublime://settings/LSP-Roslyn",
+					"allOf": [
+						{
+							"$ref": "sublime://settings/LSP-plugin-base"
+						},
+						{
+							"$ref": "sublime://settings/LSP-Roslyn#/definitions/PluginConfig"
+						}
+					],
+					"definitions": {
+						"PluginConfig": {
+							"properties": {
+								"install_command": {
+									"type": "array",
+									"default": ["dotnet", "tool", "install", "roslyn-language-server", "--prerelease", "--tool-path", "${server_path}"],
+									"description": "Background analysis settings for diagnostics"
+								},
+							}
+						}
+					}
+				}
+			},
+			{
+				"file_patterns": [
+					"/LSP.sublime-settings"
+				],
+				"schema": {
+					"properties": {
+						"clients": {
+							"properties": {
+								"LSP-Roslyn": {
+									"$ref": "sublime://settings/LSP-Roslyn#/definitions/PluginConfig"
+								}
+							}
+						}
+					}
+				}
+			},
+			{
+				"file_patterns": [
+					"/*.sublime-project"
+				],
+				"schema": {
+					"properties": {
+						"settings": {
+							"properties": {
+								"LSP": {
+									"properties": {
+										"Roslyn": {
+											"$ref": "sublime://settings/LSP-Roslyn#/definitions/PluginConfig"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		]
+	}
+}

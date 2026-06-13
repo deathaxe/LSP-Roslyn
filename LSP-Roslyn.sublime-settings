@@ -1,0 +1,38 @@
+{
+	"command": [
+		"${server_path}/roslyn-language-server",
+		"--stdio",
+		"--autoLoadProjects",
+		"--logLevel", "None",
+		"--telemetryLevel", "off",
+	],
+
+	"install_command": [
+		"dotnet",
+		"tool",
+		"install",
+		"roslyn-language-server",
+		"--prerelease",
+		"--tool-path", "${server_path}",
+	],
+
+	// "install_command": [
+	// 	"dotnet",
+	// 	"tool",
+	// 	"install",
+	// 	"roslyn-language-server",
+	// 	"--version", "5.9.0-1.26303.1",
+	// 	"--tool-path", "${server_path}",
+	// ],
+
+	"disabled_capabilities": {
+		"semanticTokensProvider": true,
+	},
+
+	"env": {
+		"DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+	},
+
+	"schemes": ["file", "buffer", "res"],
+	"selector": "source.vb | source.cs | source.cake | source.razor",
+}
