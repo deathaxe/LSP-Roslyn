@@ -35,4 +35,7 @@
 
 	"schemes": ["file", "buffer", "res"],
 	"selector": "source.vb | source.cs | source.cake | source.razor",
+	"syntax_map": {
+		"roslyn-source-generated": "C#.sublime-syntax"
+	}
 }
