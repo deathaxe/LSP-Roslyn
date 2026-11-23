@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import shlex
 import sublime
 import subprocess
 import time
@@ -16,7 +18,7 @@ class RoslynPlugin(LspPlugin):
 
     @classmethod
     @override
-    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
+    async def on_pre_start(cls, context: OnPreStartContext) -> None:
         cls.plugin_storage_path.mkdir(parents=True, exist_ok=True)
 
         server_path = str(cls.plugin_storage_path)
@@ -36,14 +38,13 @@ class RoslynPlugin(LspPlugin):
         # check language server availability and install/upgrade on demand
         if (now := time.time()) > update_timestamp + 24 * 60:
             try:
-                _ = subprocess.check_output(
-                    args=[
-                        cast(str, sublime.expand_variables(p, context.variables))
-                        for p in context.configuration.root_settings["install_command"]
-                    ],
-                    cwd=server_path,
-                    shell=True,
-                )
+                cmd = [server_binary] + context.configuration.root_settings["install_command"][1:]
+                if sublime.platform() == "windows":
+                    cmd = subprocess.list2cmdline(cmd)
+                else:
+                    cmd = shlex.join(cmd)
+
+                await asyncio.create_subprocess_shell(cmd=cmd, cwd=server_path)
             except subprocess.CalledProcessError:
                 if server_binary is None:
                     raise
