@@ -1,21 +1,31 @@
 from __future__ import annotations
 
 import asyncio
-import shlex
 import sublime
-import subprocess
 import time
 from os.path import dirname
 from shutil import which
+from subprocess import CalledProcessError
 from typing import cast, override
 
 from LSP.plugin import LspPlugin, OnPreStartContext
+
+IS_WIN = sublime.platform() == "windows"
+if IS_WIN:
+    import re
+    from subprocess import list2cmdline as shell_join
+
+    def shell_quote(s: str) -> str:
+        s = re.sub(r"([&|<>?*])", R"^\1", s)
+        return '"' + s.replace('"', '""') + '"' if " " in s else s
+
+else:
+    from shlex import join as shell_join, quote as shell_quote
 
 __all__ = ["RoslynPlugin", "plugin_loaded", "plugin_unloaded"]
 
 
 class RoslynPlugin(LspPlugin):
-
     @classmethod
     @override
     async def on_pre_start(cls, context: OnPreStartContext) -> None:
@@ -28,7 +38,9 @@ class RoslynPlugin(LspPlugin):
         # check language server existence and determine last update check timestamp
         update_timestamp = 0.0
         update_timestamp_file = cls.plugin_storage_path / "last_update_check"
-        server_binary = which(cast(str, sublime.expand_variables(context.configuration.command[0], context.variables)))
+        server_binary = which(
+            cast(str, sublime.expand_variables(shell_quote(context.configuration.command[0]), context.variables))
+        )
         if server_binary:
             try:
                 update_timestamp = float(update_timestamp_file.read_text())
@@ -38,14 +50,9 @@ class RoslynPlugin(LspPlugin):
         # check language server availability and install/upgrade on demand
         if (now := time.time()) > update_timestamp + 24 * 60:
             try:
-                cmd = [server_binary] + context.configuration.root_settings["install_command"][1:]
-                if sublime.platform() == "windows":
-                    cmd = subprocess.list2cmdline(cmd)
-                else:
-                    cmd = shlex.join(cmd)
-
-                await asyncio.create_subprocess_shell(cmd=cmd, cwd=server_path)
-            except subprocess.CalledProcessError:
+                args = [server_binary, *map(shell_quote, context.configuration.root_settings["install_command"][1:])]
+                await asyncio.create_subprocess_shell(cmd=shell_join(args), cwd=server_path)
+            except CalledProcessError:
                 if server_binary is None:
                     raise
 
