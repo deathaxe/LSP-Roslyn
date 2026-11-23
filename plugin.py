@@ -39,7 +39,7 @@ class RoslynPlugin(LspPlugin):
                 _ = subprocess.check_output(
                     args=[
                         cast(str, sublime.expand_variables(p, context.variables))
-                        for p in context.configuration.install_command
+                        for p in context.configuration.root_settings["install_command"]
                     ],
                     cwd=server_path,
                     shell=True,
